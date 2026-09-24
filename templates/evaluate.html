@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Evaluation Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #0a0d14;
+            --bg-card: #111726;
+            --bg-card-hover: #161e31;
+            --bg-card-header: #151d2f;
+            --bg-subtle: #0d121d;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: #6366f1;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --terminal-bg: #06090e;
+            --terminal-border: #1a2234;
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.2);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fcfdfe;
+            --bg-card-header: #f1f5f9;
+            --bg-subtle: #f8fafc;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --border-focus: #6366f1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-dim: #94a3b8;
+            --terminal-bg: #0f172a;
+            --terminal-border: #1e293b;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.06) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Sticky Glassmorphic Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 13, 20, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.85rem 0;
+            transition: var(--transition);
+        }
+
+        [data-theme="light"] .app-header {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .applicant-info-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            padding: 0.35rem 0.85rem;
+            gap: 0.75rem;
+            font-size: 0.88rem;
+        }
+
+        .applicant-id-badge {
+            background: rgba(99, 102, 241, 0.18);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            border-radius: var(--radius-full);
+            padding: 0.15rem 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .btn-add-applicant {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            line-height: 1;
+            transition: var(--transition);
+        }
+
+        .btn-add-applicant:hover {
+            background: #10b981;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.15rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            line-height: 1;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #4338ca);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.82rem;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-run:hover {
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Quick Jump Navigation Sub-bar */
+        .jump-nav-bar {
+            max-width: 1280px;
+            margin: 1.25rem auto 0;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .jump-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.3rem 0.65rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .jump-pill:hover, .jump-pill.active {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.4);
+            color: var(--accent-cyan);
+        }
+
+        /* Content Container */
+        .main-container {
+            max-width: 1280px;
+            margin: 1.5rem auto 4rem;
+            padding: 0 1.5rem;
+        }
+
+        /* Question Evaluation Card */
+        .eval-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .eval-card:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .eval-card-header {
+            background: var(--bg-card-header);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .eval-q-title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .eval-q-num {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-full);
+            letter-spacing: 0.04em;
+        }
+
+        .eval-q-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .eval-card-body {
+            padding: 1.25rem;
+        }
+
+        /* Monaco Editor Container Frame */
+        .editor-frame {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #1e1e1e;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .editor-top-bar {
+            background: #181818;
+            padding: 0.4rem 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .monaco-editor-box {
+            height: 140px;
+            width: 100%;
+            overflow: hidden;
+            resize: vertical;
+        }
+
+        /* Expected Output Banner */
+        .expected-box {
+            margin-top: 0.85rem;
+            background: rgba(56, 189, 248, 0.04);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            font-size: 0.88rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .expected-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .expected-code {
+            font-family: 'JetBrains Mono', monospace;
+            color: #7dd3fc;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.85rem;
+        }
+
+        /* Execution Terminal Box */
+        .output-box {
+            background: var(--terminal-bg);
+            border: 1px solid var(--terminal-border);
+            border-radius: var(--radius-sm);
+            margin-top: 0.85rem;
+            padding: 0.85rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #38bdf8;
+            white-space: pre-wrap;
+            display: none;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--terminal-border);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.6rem;
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .terminal-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        /* Floating / Bottom Submit Section */
+        .submit-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-card);
+            margin-top: 2rem;
+        }
+
+        .submit-msg {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Toast Popup */
+        #toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #10b981;
+            color: #ffffff;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 9999;
+            animation: fadeInToast 0.25s ease;
+        }
+
+        @keyframes fadeInToast {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .submit-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+    <div class="header-container">
+        <!-- Brand & Applicant Identity -->
+        <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+            <div class="brand-title">
+                <div class="brand-icon">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                </div>
+                <span>Python Evaluation</span>
+            </div>
+
+            <!-- Applicant Info Pill -->
+            <div class="applicant-info-pill">
+                <span style="color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Applicant:</span>
+                <strong style="color: var(--text-main);">{{ applicant.name }}</strong>
+                <span class="applicant-id-badge">ID: <span id="applicant_id">{{ applicant.id }}</span></span>
+                <button type="button" class="btn-add-applicant" onclick="register()" title="Register New Applicant">+</button>
+            </div>
+        </div>
+
+        <!-- Header Actions: Admin, Theme & Submit -->
+        <div class="header-actions">
+            <a href="/admin" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.85rem;" title="Admin Console: View Submissions & Enter Marks">
+                Admin
+            </a>
+            <button id="theme-toggle-btn" class="theme-btn" title="Toggle Dark/Light Mode">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <button class="btn btn-primary" onclick="submitAnswers()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Submit All Answers
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Quick Question Jump Bar -->
+<div class="jump-nav-bar">
+    <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-right: 0.25rem;">Jump:</span>
+    {% for q in questions %}
+    <a href="#question-{{ q.id }}" class="jump-pill" title="{{ q.title }}">Q{{ q.id }}</a>
+    {% endfor %}
+</div>
+
+<!-- Main Question List Container -->
+<main class="main-container">
+
+    {% for q in questions %}
+    <div class="eval-card" id="question-{{ q.id }}">
+        
+        <!-- Question Card Header -->
+        <div class="eval-card-header">
+            <div class="eval-q-title-group">
+                <span class="eval-q-num">Q{{ q.id }}</span>
+                <h2 class="eval-q-title">{{ q.title }}</h2>
+            </div>
+            
+            <button
+                type="button"
+                class="btn btn-run"
+                onclick="runCode({{ q.id }})"
+                title="Execute Python Code"
+                id="btn-run-{{ q.id }}"
+            >
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Run Code
+            </button>
+        </div>
+
+        <div class="eval-card-body">
+            <!-- Hidden value for pre-filling the editor -->
+            <input type="hidden" id="hidden_answer_{{ q.id }}" value="{{ q.current_code }}">
+
+            <!-- Monaco Editor Frame -->
+            <div class="editor-frame">
+                <div class="editor-top-bar">
+                    <span style="display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                        solution_{{ q.id }}.py
+                    </span>
+                    <span style="color: var(--accent-cyan); font-weight: 600;">Python 3</span>
+                </div>
+                <div id="editor_{{ q.id }}" class="monaco-editor-box"></div>
+            </div>
+
+            <!-- Expected Output Display -->
+            {% if q.expected_output %}
+            <div class="expected-box">
+                <div class="expected-label">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Expected Output
+                </div>
+                <div class="expected-code">{{ q.expected_output }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Terminal Output Console -->
+            <div class="output-box" id="output_{{ q.id }}">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot dot-red"></span>
+                        <span class="terminal-dot dot-yellow"></span>
+                        <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <span id="output-meta-{{ q.id }}">Console Output</span>
+                </div>
+                <div class="terminal-body" id="output-text-{{ q.id }}"></div>
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+
+    <!-- Bottom Submit Bar -->
+    <div class="submit-section">
+        <div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem;">Finished Your Evaluation?</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Click "Submit All" to store all your answers for Applicant ID: <strong style="color: var(--accent-cyan);">{{ applicant.id }}</strong>
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div id="submitMessage" class="submit-msg"></div>
+            <button class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 1rem;" onclick="submitAnswers()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Submit All Answers
+            </button>
+        </div>
+    </div>
+
+</main>
+
+<!-- Toast Notification -->
+<div id="toast-notification"></div>
+
+<script>
+    let editors = {};  // Store all editor instances by question key
+
+    // Theme Management
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    const storedTheme = localStorage.getItem('eval_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+    updateThemeIcon(storedTheme);
+
+    themeBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('eval_theme', next);
+        updateThemeIcon(next);
+        
+        // Update Monaco themes
+        const monacoTheme = next === 'dark' ? 'vs-dark' : 'vs-light';
+        monaco.editor.setTheme(monacoTheme);
+    });
+
+    function updateThemeIcon(theme) {
+        themeBtn.innerHTML = theme === 'dark' 
+            ? '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+            : '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+    }
+
+    // Load Monaco Editor with Dark/Light Support
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        const monacoTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs-light';
+        
+        document.querySelectorAll('[id^="editor_"]').forEach(div => {
+            const key = div.id.split('_')[1];
+            const initialValue = document.getElementById(`hidden_answer_${key}`).value || '';
+            
+            editors[key] = monaco.editor.create(div, {
+                value: initialValue,
+                language: 'python',
+                theme: monacoTheme,
+                automaticLayout: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', monospace",
+                lineNumbers: 'on',
+                tabSize: 4,
+                renderLineHighlight: 'all',
+                cursorBlinking: 'smooth'
+            });
+        });
+    });
+
+    // Run Code Handler
+    function runCode(index) {
+        const code = editors[index]?.getValue() || '';
+        const outBox = document.getElementById(`output_${index}`);
+        const outText = document.getElementById(`output-text-${index}`);
+        const outMeta = document.getElementById(`output-meta-${index}`);
+        const runBtn = document.getElementById(`btn-run-${index}`);
+        
+        outBox.style.display = 'block';
+        outText.textContent = 'Executing snippet...';
+        outMeta.textContent = 'Running';
+        
+        if (runBtn) {
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Running...';
+        }
+
+        const startTime = performance.now();
+
+        fetch('/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: code
+        })
+        .then(response => response.text())
+        .then(output => {
+            const duration = Math.round(performance.now() - startTime);
+            outText.textContent = output;
+            outMeta.textContent = `Executed in ${duration}ms`;
+        })
+        .catch(error => {
+            outText.textContent = 'Execution error: ' + error.message;
+            outMeta.textContent = 'Error';
+            console.error(error);
+        })
+        .finally(() => {
+            if (runBtn) {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run Code';
+            }
+        });
+    }
+
+    // Submit All Answers
+    function submitAnswers() {
+        const applicant_id = document.getElementById('applicant_id').textContent.trim();
+        const answers = {};
+
+        for (const key in editors) {
+            answers[key] = editors[key].getValue();
+        }
+
+        const msgDiv = document.getElementById('submitMessage');
+        msgDiv.innerText = "Saving all answers...";
+        msgDiv.style.color = "var(--accent-cyan)";
+
+        fetch('/submit_evaluation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ applicant_id, answers })
+        })
+        .then(res => res.text())
+        .then(response => {
+            msgDiv.innerText = "✅ " + response;
+            msgDiv.style.color = "var(--accent-emerald)";
+            showToast("Answers saved successfully for Applicant #" + applicant_id);
+        })
+        .catch(err => {
+            msgDiv.innerText = "❌ Failed to submit answers.";
+            msgDiv.style.color = "var(--accent-rose)";
+            console.error(err);
+        });
+    }
+
+    // Register New Applicant (+)
+    function register() {
+        if (!confirm("Register a new applicant ID?")) return;
+
+        fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.text())
+        .then(response => {
+            showToast(response);
+            const match = response.match(/\/evaluate\/(\d+)/);
+            if (match) {
+                setTimeout(() => {
+                    window.location.href = match[0];
+                }, 600);
+            }
+        })
+        .catch(err => {
+            alert('Error registering applicant: ' + err.message);
+            console.error(err);
+        });
+    }
+
+    // Toast Helper
+    function showToast(message) {
+        const toast = document.getElementById('toast-notification');
+        toast.textContent = message;
+        toast.style.display = 'flex';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3500);
+    }
+</script>
+
+</body>
+</html>

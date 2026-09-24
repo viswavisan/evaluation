@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Applicant Submissions & Grading | CodeEval</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0a0d14;
+            --bg-card: #111726;
+            --bg-card-header: #151d2f;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --accent-primary: #6366f1;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-full: 9999px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-header: #f1f5f9;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-dim: #94a3b8;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.06) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .header {
+            background: rgba(10, 13, 20, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .badge-admin {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent-cyan);
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.15rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #4338ca);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-In-Progress {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-Submitted {
+            background: rgba(56, 189, 248, 0.18);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+
+        .status-Graded, .status-Passed {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-Needs-Review, .status-Rejected {
+            background: rgba(244, 63, 94, 0.18);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .card-header {
+            background: var(--bg-card-header);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--text-dim);
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .score-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-content">
+        <div class="brand">
+            <span>CodeEval</span>
+            <span class="badge-admin">Admin Portal</span>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="{{ url_for('evaluate', applicant_id=2) }}" class="btn btn-secondary btn-sm" target="_blank">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Candidate View
+            </a>
+            <button class="btn btn-primary btn-sm" onclick="registerNew()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                + Register New Applicant
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-bottom: 4rem;">
+
+    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em;">Applicant Submissions</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Review code submissions, test execution output, and enter final marks.</p>
+        </div>
+        <div>
+            <span style="font-size: 0.85rem; color: var(--text-dim);">Total Applicants: <strong style="color: var(--text-main);">{{ applicants|length }}</strong></span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 style="font-size: 1.05rem; font-weight: 700;">Submissions Pipeline</h3>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Applicant Name</th>
+                        <th>Status</th>
+                        <th>Attempted Questions</th>
+                        <th>Total Marks</th>
+                        <th>Submission Date</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in applicants %}
+                    <tr>
+                        <td>
+                            <strong style="font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">#{{ a.id }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700;">{{ a.name }}</div>
+                            <div style="font-size: 0.78rem; color: var(--text-dim);">
+                                <a href="{{ url_for('evaluate', applicant_id=a.id) }}" target="_blank" style="color: var(--text-dim); text-decoration: underline;">
+                                    /evaluate/{{ a.id }}
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            {% set status_class = 'status-' ~ (a.status|replace(' ', '-')) if a.status else 'status-In-Progress' %}
+                            <span class="status-badge {{ status_class }}">
+                                {{ a.status or 'In Progress' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <strong style="font-family: 'JetBrains Mono', monospace;">{{ a.answered_count or 0 }} / {{ total_questions }}</strong>
+                                <span style="font-size: 0.75rem; color: var(--text-dim);">questions</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="score-pill">
+                                {% if a.status == 'Graded' or a.total_marks > 0 %}
+                                    {{ a.total_marks }} <span style="font-size: 0.8rem; color: var(--text-dim);">/ 100</span>
+                                {% else %}
+                                    <span style="color: var(--text-dim); font-size: 0.9rem;">Ungraded</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td style="color: var(--text-dim); font-size: 0.85rem;">
+                            {{ a.submitted_at or a.created_at or 'N/A' }}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                                <a href="{{ url_for('admin_grade', applicant_id=a.id) }}" class="btn btn-primary btn-sm">
+                                    Enter Marks &rarr;
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteApplicant({{ a.id }})" title="Delete Candidate">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    function registerNew() {
+        if (!confirm("Register a new applicant?")) return;
+        fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.text())
+        .then(response => {
+            alert(response);
+            window.location.reload();
+        })
+        .catch(err => alert("Error: " + err.message));
+    }
+
+    function deleteApplicant(id) {
+        if (!confirm(`Are you sure you want to delete Applicant #${id} and all their answers? This cannot be undone.`)) return;
+        fetch(`/admin/delete/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message || 'Applicant deleted successfully.');
+            window.location.reload();
+        })
+        .catch(err => alert("Error deleting applicant: " + err.message));
+    }
+</script>
+
+</body>
+</html>
