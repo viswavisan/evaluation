@@ -10,10 +10,12 @@ class EvaluationAppTestCase(unittest.TestCase):
         app.config['TESTING'] = True
         self.client = app.test_client()
 
-    def test_home_redirect(self):
+    def test_home_candidate_portal(self):
         res = self.client.get('/')
-        self.assertEqual(res.status_code, 302)
-        self.assertIn('/evaluate/2', res.headers['Location'])
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'Candidate Portal', res.data)
+        self.assertIn(b'Register New Assessment', res.data)
+        self.assertIn(b'Resume Assessment', res.data)
 
     def test_evaluate_page(self):
         res = self.client.get('/evaluate/2')
@@ -29,8 +31,12 @@ class EvaluationAppTestCase(unittest.TestCase):
         self.assertIn('Hello Evaluator', res.get_data(as_text=True))
 
     def test_submit_evaluation(self):
+        # Register a fresh applicant to avoid collision with grading tests
+        reg_res = self.client.post('/register', json={'name': 'Submit Tester'}, headers={'Accept': 'application/json'})
+        fresh_id = reg_res.get_json()['applicant_id']
+
         payload = {
-            'applicant_id': 2,
+            'applicant_id': fresh_id,
             'answers': {
                 '1': 'even = [2, 4, 6, 8, 10]\nodd = [1, 3, 5, 7, 9]\nprint((even, odd))'
             }
@@ -39,10 +45,48 @@ class EvaluationAppTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn('Answers submitted successfully!', res.get_data(as_text=True))
 
+    def test_submit_blocked_after_grading(self):
+        # Register, then grade, then try to submit — should be 403
+        reg_res = self.client.post('/register', json={'name': 'Graded Tester'}, headers={'Accept': 'application/json'})
+        gid = reg_res.get_json()['applicant_id']
+
+        # Grade this applicant
+        self.client.post(f'/admin/save_grade/{gid}', json={
+            'marks': {'1': '10'}, 'notes': {}, 'overall_feedback': 'Good', 'status': 'Graded'
+        })
+
+        # Attempt submission — should be blocked
+        res = self.client.post('/submit_evaluation', json={
+            'applicant_id': gid, 'answers': {'1': 'print("hello")'}
+        })
+        self.assertEqual(res.status_code, 403)
+        self.assertIn('locked', res.get_data(as_text=True).lower())
+
     def test_register_applicant(self):
         res = self.client.post('/register', json={})
         self.assertEqual(res.status_code, 200)
         self.assertIn('New applicant registered with ID:', res.get_data(as_text=True))
+
+    def test_register_applicant_with_name(self):
+        res = self.client.post('/register', json={'name': 'Jane Developer'}, headers={'Accept': 'application/json'})
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['name'], 'Jane Developer')
+        self.assertTrue(data['applicant_id'] > 0)
+        self.assertIn(f"/evaluate/{data['applicant_id']}", data['redirect_url'])
+
+    def test_applicant_api(self):
+        # Test existing applicant
+        res = self.client.get('/api/applicant/2')
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['applicant']['id'], 2)
+
+        # Test non-existing applicant
+        res_404 = self.client.get('/api/applicant/9999999')
+        self.assertEqual(res_404.status_code, 404)
 
     def test_admin_dashboard(self):
         res = self.client.get('/admin')

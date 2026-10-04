@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Portal | CodeEval Python Evaluation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0a0d14;
+            --bg-card: #111726;
+            --bg-card-hover: #161f33;
+            --bg-card-header: #151d2f;
+            --bg-subtle: #0d121d;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: #6366f1;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --shadow-card: 0 12px 36px -6px rgba(0, 0, 0, 0.55);
+            --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fcfdfe;
+            --bg-card-header: #f1f5f9;
+            --bg-subtle: #f8fafc;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --border-focus: #6366f1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-dim: #94a3b8;
+            --shadow-card: 0 12px 30px -6px rgba(0, 0, 0, 0.08);
+            --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.09) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.04) 0px, transparent 60%);
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(10, 13, 20, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .badge-portal {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            padding: 0.2rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #4338ca);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-emerald), #059669);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 3.5rem 0 2rem;
+            text-align: center;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            color: var(--accent-cyan);
+            padding: 0.35rem 0.9rem;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .hero h1 {
+            font-size: 2.85rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 680px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Portal Main Action Grid */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.75rem;
+            margin: 2.5rem 0;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .action-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-glow), var(--shadow-card);
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+            opacity: 0.8;
+        }
+
+        .card-resume::before {
+            background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+        }
+
+        .card-header-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .icon-circle-emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .action-card h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .action-card p.card-desc {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper svg {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        .input-control {
+            width: 100%;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem 1rem 0.75rem 2.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-block {
+            width: 100%;
+            padding: 0.8rem 1.25rem;
+            font-size: 0.98rem;
+            border-radius: var(--radius-sm);
+            margin-top: 0.5rem;
+        }
+
+        /* Quick Feedback Alert Box */
+        .alert-box {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.86rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            display: flex;
+        }
+
+        .alert-box.error {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.35);
+            color: #fb7185;
+            display: flex;
+        }
+
+        /* Key Metrics / Highlights Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Syllabus Section */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .topic-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .topic-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .topic-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-full);
+            display: inline-block;
+            margin-bottom: 0.65rem;
+        }
+
+        .topic-title {
+            font-weight: 700;
+            font-size: 0.98rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .topic-desc {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Admin Link Banner */
+        .admin-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(56, 189, 248, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 3.5rem;
+        }
+
+        .admin-banner-text h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .admin-banner-text p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            background: rgba(10, 13, 20, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 2.15rem; }
+            .portal-grid { grid-template-columns: 1fr; }
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="container header-content">
+        <a href="/" class="brand" title="CodeEval Platform">
+            <div class="brand-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+            </div>
+            <div>
+                <span class="brand-title">CodeEval</span>
+                <span class="badge-portal" style="margin-left: 0.4rem;">Candidate Portal</span>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <a href="/admin" class="btn btn-secondary" title="Evaluator and Administrator Console">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Admin Portal
+            </a>
+            <button id="theme-toggle-btn" class="theme-btn" title="Toggle Dark/Light Mode">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-pill">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            Live Technical Assessment Platform
+        </div>
+        <h1>Candidate Assessment Portal</h1>
+        <p>
+            Demonstrate your Python development skills with live in-browser coding, automated execution, and real-time output verification.
+        </p>
+    </section>
+
+    <!-- Action Cards Grid -->
+    <div class="portal-grid">
+        <!-- Card 1: Register New Candidate -->
+        <div class="action-card">
+            <div>
+                <div class="card-header-group">
+                    <div class="icon-circle">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>Register New Assessment</h2>
+                        <span style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 700;">CREATE SESSION ID</span>
+                    </div>
+                </div>
+
+                <p class="card-desc">
+                    Enter your full name to generate your personalized Candidate ID and launch the 10-question evaluation workspace.
+                </p>
+
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="candidate-name">Candidate Full Name</label>
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="candidate-name" 
+                                class="input-control" 
+                                placeholder="e.g. Alex Johnson" 
+                                required 
+                                autofocus
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-register-submit" class="btn btn-primary btn-block">
+                        <span>Register & Begin Assessment</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+
+                <div id="register-alert" class="alert-box"></div>
+            </div>
+        </div>
+
+        <!-- Card 2: Resume Assessment -->
+        <div class="action-card card-resume">
+            <div>
+                <div class="card-header-group">
+                    <div class="icon-circle icon-circle-emerald">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>Resume Assessment</h2>
+                        <span style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: 700;">EXISTING CANDIDATE</span>
+                    </div>
+                </div>
+
+                <p class="card-desc">
+                    Already registered? Enter your Candidate ID to resume your evaluation, edit your solutions, or complete your submission.
+                </p>
+
+                <form id="resume-form" onsubmit="handleResume(event)">
+                    <div class="form-group">
+                        <label for="existing-id">Candidate ID</label>
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="existing-id" 
+                                class="input-control" 
+                                placeholder="e.g. 2" 
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-resume-submit" class="btn btn-success btn-block">
+                        <span>Continue Assessment</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+
+                <div id="resume-alert" class="alert-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value">{{ total_questions }}</div>
+            <div class="stat-label">Coding Challenges</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">Interactive</div>
+            <div class="stat-label">Monaco & Python Runtime</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">Auto-Saved</div>
+            <div class="stat-label">Answer State Persistence</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ applicant_count }}</div>
+            <div class="stat-label">Registered Candidates</div>
+        </div>
+    </div>
+
+    <!-- Assessment Curriculum Section -->
+    <section>
+        <h2 class="section-title">Evaluation Focus & Core Domains</h2>
+        <p class="section-subtitle">The evaluation covers essential engineering competencies across 10 specialized problems:</p>
+
+        <div class="topics-grid">
+            <div class="topic-card">
+                <span class="topic-badge">Q1 - Q3</span>
+                <h3 class="topic-title">Algorithms & Data Structures</h3>
+                <p class="topic-desc">Range splitting, nested dictionary flattening with compound keys, and anagram grouping.</p>
+            </div>
+            <div class="topic-card">
+                <span class="topic-badge">Q4</span>
+                <h3 class="topic-title">Stack Syntax Verification</h3>
+                <p class="topic-desc">Balanced bracket verification handling nested braces, square brackets, and parentheses.</p>
+            </div>
+            <div class="topic-card">
+                <span class="topic-badge">Q5</span>
+                <h3 class="topic-title">Object-Oriented Python</h3>
+                <p class="topic-desc">Debugging instance constructors, class-level variable mutations, and dictionary introspection.</p>
+            </div>
+            <div class="topic-card">
+                <span class="topic-badge">Q6</span>
+                <h3 class="topic-title">Raw SQL Querying</h3>
+                <p class="topic-desc">Executing SQLite aggregate queries to filter records against dynamic computed averages.</p>
+            </div>
+            <div class="topic-card">
+                <span class="topic-badge">Q7</span>
+                <h3 class="topic-title">SQLAlchemy ORM</h3>
+                <p class="topic-desc">Declarative base models, query sessions, ordering, and selecting ranked student marks.</p>
+            </div>
+            <div class="topic-card">
+                <span class="topic-badge">Q8 - Q10</span>
+                <h3 class="topic-title">Frameworks & Tools</h3>
+                <p class="topic-desc">Flask REST endpoint definition, Pytest assertion testing, and Pandas outer dataframe merge.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Banner -->
+    <div class="admin-banner">
+        <div class="admin-banner-text">
+            <h3>Evaluator or Administrator?</h3>
+            <p>Access the Admin Dashboard to review candidate submissions, inspect executed code outputs, and record evaluation marks.</p>
+        </div>
+        <a href="/admin" class="btn btn-secondary">
+            Go to Admin Dashboard &rarr;
+        </a>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        CodeEval &bull; Python Technical Assessment & Evaluation System
+    </div>
+</footer>
+
+<script>
+    // Theme toggle
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    const htmlElem = document.documentElement;
+
+    const savedTheme = localStorage.getItem('codeeval_theme') || 'dark';
+    htmlElem.setAttribute('data-theme', savedTheme);
+
+    themeBtn.addEventListener('click', () => {
+        const currentTheme = htmlElem.getAttribute('data-theme');
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        htmlElem.setAttribute('data-theme', nextTheme);
+        localStorage.setItem('codeeval_theme', nextTheme);
+    });
+
+    // Handle New Candidate Registration
+    function handleRegister(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById('candidate-name');
+        const name = nameInput.value.trim();
+        const alertBox = document.getElementById('register-alert');
+        const submitBtn = document.getElementById('btn-register-submit');
+
+        if (!name) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Registering candidate...';
+        alertBox.className = 'alert-box';
+        alertBox.style.display = 'none';
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ name: name })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Registration failed with status ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            alertBox.className = 'alert-box success';
+            alertBox.innerHTML = `<strong>Registered!</strong> Assigned Candidate ID: #${data.applicant_id}. Redirecting to your workspace...`;
+            alertBox.style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = data.redirect_url || `/evaluate/${data.applicant_id}`;
+            }, 800);
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>Register & Begin Assessment</span><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+            alertBox.className = 'alert-box error';
+            alertBox.textContent = 'Error: ' + err.message;
+            alertBox.style.display = 'flex';
+        });
+    }
+
+    // Handle Resuming an Existing Assessment
+    function handleResume(e) {
+        e.preventDefault();
+        const idInput = document.getElementById('existing-id');
+        let idVal = idInput.value.trim().replace('#', '');
+        const alertBox = document.getElementById('resume-alert');
+        const submitBtn = document.getElementById('btn-resume-submit');
+
+        if (!idVal || isNaN(idVal)) {
+            alertBox.className = 'alert-box error';
+            alertBox.textContent = 'Please enter a valid numeric Candidate ID (e.g., 2).';
+            alertBox.style.display = 'flex';
+            return;
+        }
+
+        const candidateId = parseInt(idVal, 10);
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Finding candidate...';
+
+        fetch(`/api/applicant/${candidateId}`)
+        .then(res => {
+            if (res.status === 404) {
+                throw new Error(`Candidate #${candidateId} does not exist. Please check your ID or register as a new candidate.`);
+            }
+            if (!res.ok) throw new Error('Could not verify candidate.');
+            return res.json();
+        })
+        .then(data => {
+            alertBox.className = 'alert-box success';
+            const name = data.applicant.name || 'Candidate';
+            alertBox.innerHTML = `Found <strong>${name}</strong> (ID #${candidateId}). Opening assessment...`;
+            alertBox.style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = `/evaluate/${candidateId}`;
+            }, 600);
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>Continue Assessment</span><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+            alertBox.className = 'alert-box error';
+            alertBox.textContent = err.message;
+            alertBox.style.display = 'flex';
+        });
+    }
+</script>
+</body>
+</html>

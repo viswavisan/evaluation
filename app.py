@@ -17,15 +17,15 @@ QUESTIONS = [
     },
     {
         "id": 2,
-        "title": "2. Basic : flatten_dict({'a':1, 'b':{'b1':2}, 'c':[1,2,3], 'd':{'d1':{'d2':3}} })",
+        "title": "2. Basic : group_anagrams(words=['eat','tea','tan','ate','nat','bat'])",
         "prefill": "",
-        "expected_output": "{'a': 1, 'b.b1': 2, 'c': [1, 2, 3], 'd.d1.d2': 3}"
+        "expected_output": "[['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]"
     },
     {
         "id": 3,
-        "title": "3. Basic : group_anagrams(words=['eat','tea','tan','ate','nat','bat'])",
+        "title": "3. Basic : flatten_dict({'a':1, 'b':{'b1':2}, 'c':[1,2,3], 'd':{'d1':{'d2':3}} })",
         "prefill": "",
-        "expected_output": "[['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]"
+        "expected_output": "{'a': 1, 'b.b1': 2, 'c': [1, 2, 3], 'd.d1.d2': 3}"
     },
     {
         "id": 4,
@@ -112,7 +112,7 @@ session.commit()
 
 #answer
 ------------------------------------------""",
-        "expected_output": "['Grace']"
+        "expected_output": "['Grace','Tony']"
     },
     {
         "id": 8,
@@ -205,6 +205,20 @@ def init_db():
         except sqlite3.OperationalError:
             pass
 
+    # Swap existing answers for Q2 and Q3 once if needed
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS schema_meta (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
+    cursor.execute("SELECT value FROM schema_meta WHERE key = 'reorder_q2_q3'")
+    if not cursor.fetchone():
+        cursor.execute("UPDATE answers SET question_id = -2 WHERE question_id = 2")
+        cursor.execute("UPDATE answers SET question_id = 2 WHERE question_id = 3")
+        cursor.execute("UPDATE answers SET question_id = 3 WHERE question_id = -2")
+        cursor.execute("INSERT INTO schema_meta (key, value) VALUES ('reorder_q2_q3', 'done')")
+
     # Create default applicant 2 if empty
     cursor.execute('SELECT COUNT(*) FROM applicants')
     if cursor.fetchone()[0] == 0:
@@ -216,7 +230,11 @@ init_db()
 
 @app.route('/')
 def home():
-    return redirect(url_for('evaluate', applicant_id=2))
+    conn = sqlite3.connect(DB_PATH, timeout=20.0)
+    cursor = conn.cursor()
+    applicant_count = cursor.execute('SELECT COUNT(*) FROM applicants').fetchone()[0]
+    conn.close()
+    return render_template('index.html', total_questions=len(QUESTIONS), applicant_count=applicant_count)
 
 @app.route('/evaluate/<int:applicant_id>')
 def evaluate(applicant_id):
@@ -278,6 +296,12 @@ def submit_evaluation():
 
     conn = sqlite3.connect(DB_PATH, timeout=20.0)
     cursor = conn.cursor()
+
+    # Block submission if already graded
+    row = cursor.execute('SELECT status FROM applicants WHERE id = ?', (applicant_id,)).fetchone()
+    if row and row[0] == 'Graded':
+        conn.close()
+        return 'Submission locked — this evaluation has already been graded.', 403
     
     # Save answers
     for q_id_str, code in answers.items():
@@ -307,13 +331,52 @@ def submit_evaluation():
 
 @app.route('/register', methods=['POST'])
 def register():
+    name = ''
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        name = data.get('name', '').strip()
+    elif request.form:
+        name = request.form.get('name', '').strip()
+
+    if not name:
+        name = 'Candidate'
+
     conn = sqlite3.connect(DB_PATH, timeout=20.0)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO applicants (name, status) VALUES ('xxxx', 'In Progress')")
+    cursor.execute("INSERT INTO applicants (name, status) VALUES (?, 'In Progress')", (name,))
     new_id = cursor.lastrowid
     conn.commit()
     conn.close()
-    return f'New applicant registered with ID: {new_id}. You can visit /evaluate/{new_id}'
+
+    eval_url = url_for('evaluate', applicant_id=new_id)
+
+    if request.is_json or request.headers.get('Accept') == 'application/json':
+        return jsonify({
+            'status': 'success',
+            'applicant_id': new_id,
+            'name': name,
+            'redirect_url': eval_url,
+            'message': f'New applicant registered with ID: {new_id}. You can visit {eval_url}'
+        })
+
+    return f'New applicant registered with ID: {new_id}. You can visit {eval_url}'
+
+@app.route('/api/applicant/<int:applicant_id>')
+def get_applicant_api(applicant_id):
+    conn = sqlite3.connect(DB_PATH, timeout=20.0)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    applicant = cursor.execute('SELECT id, name, status, submitted_at, total_marks FROM applicants WHERE id = ?', (applicant_id,)).fetchone()
+    conn.close()
+
+    if not applicant:
+        return jsonify({'status': 'error', 'message': f'Applicant #{applicant_id} not found.'}), 404
+
+    return jsonify({
+        'status': 'success',
+        'applicant': dict(applicant),
+        'redirect_url': url_for('evaluate', applicant_id=applicant_id)
+    })
 
 # --- Admin Routes (Check Submissions & Enter Marks) ---
 

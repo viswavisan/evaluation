@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Applicant Submissions & Grading | CodeEval</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-body: #0a0d14;
@@ -39,14 +42,18 @@
             --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             min-height: 100vh;
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.06) 0px, transparent 50%);
             background-attachment: fixed;
@@ -179,13 +186,15 @@
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
 
-        .status-Graded, .status-Passed {
+        .status-Graded,
+        .status-Passed {
             background: rgba(16, 185, 129, 0.18);
             color: #34d399;
             border: 1px solid rgba(16, 185, 129, 0.4);
         }
 
-        .status-Needs-Review, .status-Rejected {
+        .status-Needs-Review,
+        .status-Rejected {
             background: rgba(244, 63, 94, 0.18);
             color: #fb7185;
             border: 1px solid rgba(244, 63, 94, 0.4);
@@ -245,145 +254,150 @@
         }
     </style>
 </head>
+
 <body>
 
-<header class="header">
-    <div class="container header-content">
-        <div class="brand">
-            <span>CodeEval</span>
-            <span class="badge-admin">Admin Portal</span>
+    <header class="header">
+        <div class="container header-content">
+            <div class="brand">
+                <span>CodeEval</span>
+                <span class="badge-admin">Admin Portal</span>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm" title="Go to Candidate Portal">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Candidate Portal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 4rem;">
+
+        <div
+            style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em;">Applicant Submissions</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Review code submissions, test execution output,
+                    and enter final marks.</p>
+            </div>
+            <div>
+                <span style="font-size: 0.85rem; color: var(--text-dim);">Total Applicants: <strong
+                        style="color: var(--text-main);">{{ applicants|length }}</strong></span>
+            </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <a href="{{ url_for('evaluate', applicant_id=2) }}" class="btn btn-secondary btn-sm" target="_blank">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                Candidate View
-            </a>
-            <button class="btn btn-primary btn-sm" onclick="registerNew()">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                + Register New Applicant
-            </button>
-        </div>
-    </div>
-</header>
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: 1.05rem; font-weight: 700;">Submissions Pipeline</h3>
+            </div>
 
-<main class="container" style="padding-bottom: 4rem;">
-
-    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h1 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em;">Applicant Submissions</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Review code submissions, test execution output, and enter final marks.</p>
-        </div>
-        <div>
-            <span style="font-size: 0.85rem; color: var(--text-dim);">Total Applicants: <strong style="color: var(--text-main);">{{ applicants|length }}</strong></span>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">
-            <h3 style="font-size: 1.05rem; font-weight: 700;">Submissions Pipeline</h3>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Applicant Name</th>
-                        <th>Status</th>
-                        <th>Attempted Questions</th>
-                        <th>Total Marks</th>
-                        <th>Submission Date</th>
-                        <th style="text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for a in applicants %}
-                    <tr>
-                        <td>
-                            <strong style="font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">#{{ a.id }}</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700;">{{ a.name }}</div>
-                            <div style="font-size: 0.78rem; color: var(--text-dim);">
-                                <a href="{{ url_for('evaluate', applicant_id=a.id) }}" target="_blank" style="color: var(--text-dim); text-decoration: underline;">
-                                    /evaluate/{{ a.id }}
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            {% set status_class = 'status-' ~ (a.status|replace(' ', '-')) if a.status else 'status-In-Progress' %}
-                            <span class="status-badge {{ status_class }}">
-                                {{ a.status or 'In Progress' }}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <strong style="font-family: 'JetBrains Mono', monospace;">{{ a.answered_count or 0 }} / {{ total_questions }}</strong>
-                                <span style="font-size: 0.75rem; color: var(--text-dim);">questions</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="score-pill">
-                                {% if a.status == 'Graded' or a.total_marks > 0 %}
-                                    {{ a.total_marks }} <span style="font-size: 0.8rem; color: var(--text-dim);">/ 100</span>
-                                {% else %}
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Applicant Name</th>
+                            <th>Status</th>
+                            <th>Attempted Questions</th>
+                            <th>Total Marks</th>
+                            <th>Submission Date</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in applicants %}
+                        <tr>
+                            <td>
+                                <strong style="font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);">#{{
+                                    a.id }}</strong>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700;">{{ a.name }}</div>
+                                <div style="font-size: 0.78rem; color: var(--text-dim);">
+                                    <a href="{{ url_for('evaluate', applicant_id=a.id) }}" target="_blank"
+                                        style="color: var(--text-dim); text-decoration: underline;">
+                                        /evaluate/{{ a.id }}
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                {% set status_class = 'status-' ~ (a.status|replace(' ', '-')) if a.status else
+                                'status-In-Progress' %}
+                                <span class="status-badge {{ status_class }}">
+                                    {{ a.status or 'In Progress' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <strong style="font-family: 'JetBrains Mono', monospace;">{{ a.answered_count or 0
+                                        }} / {{ total_questions }}</strong>
+                                    <span style="font-size: 0.75rem; color: var(--text-dim);">questions</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="score-pill">
+                                    {% if a.status == 'Graded' or a.total_marks > 0 %}
+                                    {{ a.total_marks }} <span style="font-size: 0.8rem; color: var(--text-dim);">/
+                                        100</span>
+                                    {% else %}
                                     <span style="color: var(--text-dim); font-size: 0.9rem;">Ungraded</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td style="color: var(--text-dim); font-size: 0.85rem;">
-                            {{ a.submitted_at or a.created_at or 'N/A' }}
-                        </td>
-                        <td style="text-align: right;">
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
-                                <a href="{{ url_for('admin_grade', applicant_id=a.id) }}" class="btn btn-primary btn-sm">
-                                    Enter Marks &rarr;
-                                </a>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteApplicant({{ a.id }})" title="Delete Candidate">
-                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td style="color: var(--text-dim); font-size: 0.85rem;">
+                                {{ a.submitted_at or a.created_at or 'N/A' }}
+                            </td>
+                            <td style="text-align: right;">
+                                <div
+                                    style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                                    <a href="{{ url_for('admin_grade', applicant_id=a.id) }}"
+                                        class="btn btn-primary btn-sm">
+                                        Enter Marks &rarr;
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="deleteApplicant({{ a.id }})" title="Delete Candidate">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-</main>
+    </main>
 
-<script>
-    function registerNew() {
-        if (!confirm("Register a new applicant?")) return;
-        fetch('/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(res => res.text())
-        .then(response => {
-            alert(response);
-            window.location.reload();
-        })
-        .catch(err => alert("Error: " + err.message));
-    }
+    <script>
 
-    function deleteApplicant(id) {
-        if (!confirm(`Are you sure you want to delete Applicant #${id} and all their answers? This cannot be undone.`)) return;
-        fetch(`/admin/delete/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message || 'Applicant deleted successfully.');
-            window.location.reload();
-        })
-        .catch(err => alert("Error deleting applicant: " + err.message));
-    }
-</script>
+        function deleteApplicant(id) {
+            if (!confirm(`Are you sure you want to delete Applicant #${id} and all their answers? This cannot be undone.`)) return;
+            fetch(`/admin/delete/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Applicant deleted successfully.');
+                    window.location.reload();
+                })
+                .catch(err => alert("Error deleting applicant: " + err.message));
+        }
+    </script>
 
 </body>
+
 </html>

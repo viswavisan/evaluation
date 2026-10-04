@@ -1,0 +1,14 @@
+
+[Unit]
+Description=EVALUATION API Service
+After=network.target
+
+[Service]
+User=opc
+WorkingDirectory=/home/opc/evaluation
+ExecStart=/home/opc/evaluation/venv/bin/python3 /home/opc/evaluation/app.py
+Restart=always
+Environment="PATH=/home/opc/evaluation/venv/bin:/usr/bin"
+
+[Install]
+WantedBy=multi-user.target
