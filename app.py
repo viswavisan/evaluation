@@ -6,7 +6,7 @@ import time
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 
 app = Flask(__name__)
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evaluation.db')
+DB_PATH = '/home/opc/evaluation.db'
 
 QUESTIONS = [
     {
@@ -166,6 +166,8 @@ print(merged)""",
 ]
 
 def init_db():
+    if os.path.dirname(DB_PATH):
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH, timeout=20.0)
     cursor = conn.cursor()
     cursor.execute('''
