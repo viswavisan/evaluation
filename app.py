@@ -77,7 +77,7 @@ print(run_query('''------------------------------'''))""",
     {
         "id": 7,
         "title": "7. ORM : Get the names of students who got 5th highest marks by SQLAlchemy ORM",
-        "prefill": """from sqlalchemy import create_engine, Column, Integer, String
+        "prefill": """from sqlalchemy import create_engine, Column, Integer, String,text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.sql import func
 
@@ -120,32 +120,7 @@ print([r[0] for r in result])
     },
     {
         "id": 8,
-        "title": "8. flask: Create a route /add that accepts a POST request with JSON data containing two numbers a and b, and returns their sum in JSON.",
-        "prefill": """from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route('/add')
-def greet():
-    _____________________
-    ____________________
-    if a is None or b is None:
-        return jsonify({"error": "Missing numbers"}), 400
-    return jsonify({"sum": a + b})
-
-if __name__ == "__main__":
-    _______________________""",
-        "expected_output": ""
-    },
-    {
-        "id": 9,
-        "title": "9. Test : Write a Pytest test for a function that adds two numbers.",
-        "prefill": "",
-        "expected_output": ""
-    },
-    {
-        "id": 10,
-        "title": "10. pandas : merge dataframe",
+        "title": "8. pandas : merge dataframe",
         "prefill": """import ________
 
 df1 = ({
@@ -166,6 +141,31 @@ print(merged)""",
 1   2      Bob  60000.0
 2   3  Charlie      NaN
 3   4      NaN  70000.0"""
+    },
+    {
+        "id": 9,
+        "title": "9. flask: Create a route /add that accepts a POST request with JSON data containing two numbers a and b, and returns their sum in JSON.",
+        "prefill": """from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/add')
+def greet():
+    _____________________
+    ____________________
+    if a is None or b is None:
+        return jsonify({"error": "Missing numbers"}), 400
+    return jsonify({"sum": a + b})
+
+if __name__ == "__main__":
+    _______________________""",
+        "expected_output": ""
+    },
+    {
+        "id": 10,
+        "title": "10. Test : Write a Pytest test for a function that adds two numbers.",
+        "prefill": "",
+        "expected_output": ""
     }
 ]
 
@@ -224,6 +224,18 @@ def init_db():
         cursor.execute("UPDATE answers SET question_id = 2 WHERE question_id = 3")
         cursor.execute("UPDATE answers SET question_id = 3 WHERE question_id = -2")
         cursor.execute("INSERT INTO schema_meta (key, value) VALUES ('reorder_q2_q3', 'done')")
+
+    # Shift answers for Q10 to Q8, Q8 to Q9, and Q9 to Q10
+    cursor.execute("SELECT value FROM schema_meta WHERE key = 'reorder_q10_to_q8'")
+    if not cursor.fetchone():
+        cursor.execute("UPDATE answers SET question_id = -8 WHERE question_id = 10")
+        cursor.execute("UPDATE answers SET question_id = -10 WHERE question_id = 9")
+        cursor.execute("UPDATE answers SET question_id = -9 WHERE question_id = 8")
+        cursor.execute("UPDATE answers SET question_id = 8 WHERE question_id = -8")
+        cursor.execute("UPDATE answers SET question_id = 9 WHERE question_id = -9")
+        cursor.execute("UPDATE answers SET question_id = 10 WHERE question_id = -10")
+        cursor.execute("INSERT INTO schema_meta (key, value) VALUES ('reorder_q10_to_q8', 'done')")
+
 
     # Create default applicant 2 if empty
     cursor.execute('SELECT COUNT(*) FROM applicants')

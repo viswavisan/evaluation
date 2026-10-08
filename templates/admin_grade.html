@@ -292,8 +292,7 @@
                     style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <label
-                            style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim);">Marks
-                            (out of 10):</label>
+                            style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim);">Marks (out of 10):</label>
                         <input type="number" min="0" max="10" step="0.5" class="marks-input q-mark-input"
                             data-qid="{{ q.id }}" value="{{ q.marks if q.marks is not none else '' }}" placeholder="0">
 
