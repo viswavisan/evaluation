@@ -111,7 +111,11 @@ session.add_all(students_data)
 session.commit()
 
 #answer
-------------------------------------------""",
+#answer
+query='''------------------------------------------'''
+result = session.execute(query).fetchall()
+print([r[0] for r in result])
+""",
         "expected_output": "['Grace','Tony']"
     },
     {
